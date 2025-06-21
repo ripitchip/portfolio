@@ -5,7 +5,6 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { rehypeGithubAlerts } from "rehype-github-alerts";
 import { transformerCopyButton } from "@rehype-pretty/transformers";
 import rehypeMermaid from "rehype-mermaid";
-import { addCopyButton } from "shiki-transformer-copy-button";
 
 const computedFields = <T extends { slug: string }>(data: T) => ({
   ...data,

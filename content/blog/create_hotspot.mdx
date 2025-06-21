@@ -1,0 +1,69 @@
+---
+title: Creation of a clean project
+description: Creation of a clean project
+date: 2025-06-21
+tags: ["Linux","CI","git"]
+published: false
+img: git/Git-Tools.jpg
+writers: ["Thomas"]
+---
+
+
+
+## Devcontainer
+Devcontainers are a way to define a development environment using Docker.
+To create a devcontainer, you need to create a `.devcontainer` folder in your project root with a `devcontainer.json` file inside.
+Example of a `devcontainer.json` file:
+```json
+{
+  "name": "My Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/python:3.9",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+  },
+  "postCreateCommand": "pip install -r requirements.txt"
+}
+```
+
+## Pre-commit
+Pre-commit is a tool to manage your git hooks.
+It allows you to run scripts before committing your code, ensuring that your code meets certain standards or passes tests.
+
+To install pre-commit, run:
+```sh
+sudo apt install pre-commit
+```
+
+Example with python project (ruff + black + pytest):
+```yaml
+repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.261  # Use the latest stable version of ruff
+    hooks:
+      - id: ruff
+        args: [--fix]  # Automatically fix issues if possible
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1  # Use the latest stable version of black
+    hooks:
+      - id: black
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+```
+
+## Makefile
+Makefiles are a way to define tasks in a project.
+Example of a `Makefile`:
+```makefile
+build:
+  docker build -t my-image .
+test:
+  docker run --rm my-image pytest
+```

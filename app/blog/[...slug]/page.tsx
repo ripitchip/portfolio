@@ -24,18 +24,20 @@ interface PostPageProps {
   };
 }
 
+// Fetch the post based on the provided slug
 async function getPostFromParams(params: PostPageProps["params"]) {
   const slug = params?.slug?.join("/");
   const post = posts.find((post) => post.slugAsParams === slug);
-
   return post;
 }
 
+// Generate metadata for the page dynamically based on the post
 export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
   const post = await getPostFromParams(params);
 
+  // Return empty metadata if post is not found
   if (!post) {
     return {};
   }
@@ -64,6 +66,7 @@ export async function generateMetadata({
   };
 }
 
+// Generate static params for dynamic routing
 export async function generateStaticParams(): Promise<
   PostPageProps["params"][]
 > {
@@ -73,12 +76,15 @@ export async function generateStaticParams(): Promise<
 export default async function PostPage({ params }: PostPageProps) {
   const post = await getPostFromParams(params);
 
+  // Gracefully handle missing or unpublished posts
   if (!post || !post.published) {
     notFound();
   }
-  const myAuthors: Array<Author> = post.writers.map((writer) =>
-    findAuthorByName(writer),
-  );
+
+  // Fetch the authors and ensure they are available
+  const myAuthors: Array<Author> = post.writers
+    ? post.writers.map((writer) => findAuthorByName(writer))
+    : [];
 
   return (
     <article className="container py-6 prose dark:prose-invert max-w-3xl mx-auto">
@@ -95,75 +101,73 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="flex gap-2 mb-2 mt-3">
             {post.tags?.map((tag) => <Tag tag={tag} key={tag} />)}
           </div>
-          <div className="flex-col">
-            {myAuthors?.length ? (
-              <div className="mt-0 flex space-x-6">
-                {myAuthors.map((author) =>
-                  author ? (
-                    <div
-                      key={author.name}
-                      className="flex items-center  text-sm"
+
+          {myAuthors.length > 0 && (
+            <div className="mt-0 flex space-x-6">
+              {myAuthors.map((author) =>
+                author ? (
+                  <div key={author.name} className="flex items-center text-sm">
+                    <Link
+                      href={author.link}
+                      className="rounded-2xl p-3 mt-0 mb-0 flex items-center text-sm"
                     >
-                      <Link
-                        href={author.link}
-                        className="rounded-2xl p-3 mt-0 mb-0 flex items-center text-sm"
-                      >
-                        <Avatar>
-                          <AvatarImage loading="eager" src={author.avatar} />
-                          <AvatarFallback>
-                            {author.name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Link>
-                      <div className="flex-1 mt-0 mb-0 text-left leading-tight">
-                        <HoverCard>
-                          <HoverCardTrigger href={author.link}>
+                      <Avatar>
+                        <AvatarImage loading="eager" src={author.avatar} />
+                        <AvatarFallback>
+                          {author.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
+                    <div className="flex-1 mt-0 mb-0 text-left leading-tight">
+                      <HoverCard>
+                        <HoverCardTrigger href={author.link}>
+                          <p className="font-medium mt-0 mb-0">{author.name}</p>
+                        </HoverCardTrigger>
+                        <HoverCardContent>
+                          <div className="flex items-center text-sm">
+                            <Avatar>
+                              <AvatarImage
+                                loading="eager"
+                                src={author.avatar}
+                              />
+                              <AvatarFallback>
+                                {author.name.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
                             <p className="font-medium mt-0 mb-0">
                               {author.name}
                             </p>
-                          </HoverCardTrigger>
-                          <HoverCardContent>
-                            <div
-                              key={author.name}
-                              className="flex items-center  text-sm"
-                            >
-                              <Avatar>
-                                <AvatarImage
-                                  loading="eager"
-                                  src={author.link}
-                                />
-                                <AvatarFallback>
-                                  {author.name.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <p className="font-medium mt-0 mb-0">
-                                {author.name}
-                              </p>
-                              <p className="font-medium mt-0 mb-0">
-                                {author.name}
-                              </p>
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
-                        <p className="text-[12px] mt-0 mb-0 text-muted-foreground">
-                          @{author.name}
-                        </p>
-                      </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <p className="text-[12px] mt-0 mb-0 text-muted-foreground">
+                        @{author.name}
+                      </p>
                     </div>
-                  ) : null,
-                )}
-              </div>
-            ) : null}
-          </div>
+                  </div>
+                ) : null,
+              )}
+            </div>
+          )}
         </div>
-        <img
+
+        <Image
           src={`/images/posts/${post.img}`}
           alt={post.img}
           className="object-contain mt-0 mb-0 rounded-md bg-muted transition-colors w-full max-h-[20em]"
+          width={1200}
+          height={630}
         />
       </div>
+
       <hr className="my-4" />
-      <MDXContent code={post.body} />
+
+      {/* Ensure that post.body is valid */}
+      {post.body ? (
+        <MDXContent code={post.body} />
+      ) : (
+        <div>Post content is missing or invalid.</div>
+      )}
     </article>
   );
 }

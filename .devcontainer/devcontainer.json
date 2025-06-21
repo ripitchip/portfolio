@@ -1,0 +1,15 @@
+{
+  "name": "Minimal Debian Dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "USERNAME": "thomas",
+      "USER_UID": "1000"
+    }
+  },
+  "remoteUser": "root",
+  "workspaceFolder": "/home/thomas/dev",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/home/thomas/dev,type=bind,consistency=cached"
+  ]
+}
